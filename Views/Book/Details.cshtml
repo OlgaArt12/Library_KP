@@ -1,0 +1,53 @@
+﻿@model Library_KP.Models.BooksModel.Book
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Информация о книге:</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NameBook)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NameBook)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NumberOfPage)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NumberOfPage)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.YearOfPublication)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.YearOfPublication)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Author)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Author)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.PartitionNameNavigation.NamePartition)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.PartitionNameNavigation.NamePartition)
+        </dd>
+        <dt class="col-sm-2">
+            Сколько раз брали книгу:
+        </dt>
+        <dd class="col-sm-10">
+            @ViewBag.countBook
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.RegistrationId">Изменить</a> |
+    <a asp-action="Index">Вернуться назад!</a>
+</div>

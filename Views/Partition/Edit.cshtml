@@ -1,0 +1,36 @@
+﻿@model Library_KP.Models.Partition
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Редактирование раздела!</h1>
+
+<h4>
+    @ViewBag.Message
+</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="PartitionId" />
+            <div class="form-group">
+                <label asp-for="NamePartition" class="control-label"></label>
+                <input type="text" asp-for="NamePartition" class="form-control" />
+                <span asp-validation-for="NamePartition" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Сохранить" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Вернуться назад!</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,25 @@
+﻿@model Library_KP.Models.Partition
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Удаление!</h1>
+
+<div>
+    <h4>@ViewBag.Message</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Жанр:
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NamePartition)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="PartitionId" />
+        <a asp-action="Index">Вернуться назад!</a>
+    </form>
+</div>

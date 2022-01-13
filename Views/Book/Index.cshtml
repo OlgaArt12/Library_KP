@@ -1,0 +1,91 @@
+﻿@using Library_KP.Models.BooksModel
+@model IndexViewModel
+@addTagHelper *, Library_KP
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Книги</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-sm btn-success ml-1">Добавить книгу</a>
+</p>
+
+<page-link page-model="Model.PageViewModel" page-action="Index"
+           page-url-name="@(Model.FilterViewModel.SelectedName)"
+           page-url-company="@(Model.FilterViewModel.SelectedPartition)"
+           page-url-sortorder="@(Model.SortViewModel.Current)">
+</page-link>
+
+<form method="get">
+    <div class="form-inline">
+        <label>Название книги: </label>
+        <input name="nameBook" value="@Model.FilterViewModel.SelectedName" class="form-control" />
+
+        <label>Жанр: </label>
+        <select name="part" asp-items="Model.FilterViewModel.Partitions" class="form-control"></select>
+
+        <input type="submit" value="Фильтр" class="btn btn-outline-dark" />
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@(Model.SortViewModel.NameBookSort)"
+                   asp-route-name="@(Model.FilterViewModel.SelectedName)"
+                   asp-route-company="@(Model.FilterViewModel.SelectedPartition)">Название книг</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.numbSort)"
+                   asp-route-name="@(Model.FilterViewModel.SelectedName)"
+                   asp-route-company="@(Model.FilterViewModel.SelectedPartition)">Кол-во страниц</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.YearSort)"
+                   asp-route-name="@(Model.FilterViewModel.SelectedName)"
+                   asp-route-company="@(Model.FilterViewModel.SelectedPartition)">Год издания</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.authSort)"
+                   asp-route-name="@(Model.FilterViewModel.SelectedName)"
+                   asp-route-company="@(Model.FilterViewModel.SelectedPartition)">Автор</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.PartSort)"
+                   asp-route-name="@(Model.FilterViewModel.SelectedName)"
+                   asp-route-company="@(Model.FilterViewModel.SelectedPartition)">Жанр</a>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Books)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NameBook)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NumberOfPage)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.YearOfPublication)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Author)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PartitionNameNavigation.NamePartition)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.RegistrationId" class="btn btn-sm btn-primary ml-1">Информация</a> |
+                    <a asp-action="Edit" asp-route-id="@item.RegistrationId" class="btn btn-sm btn-info">Изменить</a> |
+                    <a asp-action="Delete" asp-route-id="@item.RegistrationId" class="btn btn-sm btn-danger ml-1" onclick="return confirm('Вы точно хотетите удалить запись?')">Удалить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

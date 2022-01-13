@@ -1,0 +1,55 @@
+﻿@using Library_KP.Models.ReadersModel
+@model IndexViewModel
+@addTagHelper *, Library_KP
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Читатели</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-sm btn-success ml-1">Добавить читателя</a>
+</p>
+
+<page-link page-model="Model.PageViewModel" page-action="Index"
+           page-url-sortorder="@(Model.SortViewModel.Current)">
+</page-link>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@(Model.SortViewModel.NameSort)">ФИО: </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.PassSort)">Данные паспорта: </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.HomeSort)">Домашний адрес: </a>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Readers)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Fcs)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PassportData)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.HomeAddress)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.NumberTicket" class="btn btn-sm btn-primary ml-1">Информация</a> |
+                    <a asp-action="Edit" asp-route-id="@item.NumberTicket" class="btn btn-sm btn-info">Изменить</a> |
+                    <a asp-action="Delete" asp-route-id="@item.NumberTicket" class="btn btn-sm btn-danger ml-1" onclick="return confirm('Вы точно хотетите удалить запись?')">Удалить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

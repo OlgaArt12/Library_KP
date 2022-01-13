@@ -1,0 +1,63 @@
+﻿@using Library_KP.Models.TerminalModel
+@model IndexViewModel
+@addTagHelper *, Library_KP
+
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Выдача/Возврат книг</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-sm btn-success ml-1">Выдать книгу</a>
+</p>
+
+<page-link page-model="Model.PageViewModel" page-action="Index"
+           page-url-sortorder="@(Model.SortViewModel.Current)">
+</page-link>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="Index"
+                   asp-route-sortOrder="@(Model.SortViewModel.FioSort)">ФИО:</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.NameBookSort)">Название книги:</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.DISort)">Дата выдачи:</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@(Model.SortViewModel.RDSort)">Дата возврата:</a>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Terminals)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NumberTicketsNavigation.Fcs)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RegistrationBook.NameBook)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateIssue)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReturnDate)
+                </td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.TerminalId" class="btn btn-sm btn-info">Изменить</a> |
+                    <a asp-action="Details" asp-route-id="@item.TerminalId" class="btn btn-sm btn-primary ml-1">Информация</a> |
+                    <a asp-action="Delete" asp-route-id="@item.TerminalId" class="btn btn-sm btn-danger ml-1" onclick="return confirm('Вы точно хотетите удалить запись?')">Удалить</a>
+                </td>
+            </tr>
+         }
+    </tbody>
+</table>

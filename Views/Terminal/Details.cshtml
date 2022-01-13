@@ -1,0 +1,42 @@
+﻿@model Library_KP.Models.Terminal
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Информация о выдаче/возврате:</h1>
+
+<div>
+    <h5>@ViewBag.div</h5>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NumberTicketsNavigation)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NumberTicketsNavigation.Fcs)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.RegistrationBook)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.RegistrationBook.NameBook)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DateIssue)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DateIssue)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ReturnDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ReturnDate)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.TerminalId">Изменить</a> |
+    <a asp-action="Index">Вернуться назад!</a>
+</div>

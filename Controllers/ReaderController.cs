@@ -1,6 +1,7 @@
 ﻿using Library_KP.Data;
 using Library_KP.Models;
 using Library_KP.Models.ReadersModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: ReaderController
+        [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Index(string name, int page = 1, SortState sortOrder = SortState.NameAsc)
         {
             const int pageSize = 15;
@@ -65,6 +67,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: ReaderController/Details/5
+        [Authorize(Roles = "admin, user")]
         public ActionResult Details(int id)
         {
             Reader reader = db.Readers.Where(r => r.NumberTicket == id).FirstOrDefault();
@@ -74,6 +77,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: ReaderController/Create
+        [Authorize(Roles = "admin")]
         public ActionResult Create()
         {
             Reader reader = new Reader();
@@ -107,6 +111,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: ReaderController/Edit/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id != null)
@@ -146,6 +151,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: ReaderController/Delete/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             try

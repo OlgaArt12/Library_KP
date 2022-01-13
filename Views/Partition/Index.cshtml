@@ -6,32 +6,32 @@
 
 <h1>Жанры</h1>
 
-<p>
-    <a asp-action="Create" class="btn btn-sm btn-success ml-1">Создать новый раздел</a>
-</p>
+    <p>
+        <a asp-action="Create" class="btn btn-sm btn-success ml-1">Создать новый раздел</a>
+    </p>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.NamePartition)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+    <table class="table">
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.NamePartition)
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.PartitionId" class="btn btn-sm btn-primary ml-1">Информация</a> |
-                    <a asp-action="Edit" asp-route-id="@item.PartitionId" class="btn btn-sm btn-info">Изменить</a> |
-                    <a asp-action="Delete" asp-route-id="@item.PartitionId" class="btn btn-sm btn-danger ml-1" onclick="return confirm('Вы точно хотетите удалить запись?')">Удалить</a>
-                </td>
+                <th>
+                    @Html.DisplayNameFor(model => model.NamePartition)
+                </th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.NamePartition)
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.PartitionId" class="btn btn-sm btn-primary ml-1">Информация</a> |
+                        <a asp-action="Edit" asp-route-id="@item.PartitionId" class="btn btn-sm btn-info">Изменить</a> |
+                        <a asp-action="Delete" asp-route-id="@item.PartitionId" class="btn btn-sm btn-danger ml-1" onclick="return confirm('Вы точно хотетите удалить запись?')">Удалить</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>

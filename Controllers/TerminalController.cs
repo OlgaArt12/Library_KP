@@ -1,6 +1,8 @@
 ﻿using Library_KP.Data;
 using Library_KP.Models;
+using Library_KP.Models.Administrirovanie;
 using Library_KP.Models.TerminalModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -8,20 +10,25 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace Library_KP.Controllers
 {
     public class TerminalController : Controller
     {
         private readonly LibraryContext db;
+        private readonly ApplicationContext aC;
 
-        public TerminalController(LibraryContext context) 
+        public TerminalController(LibraryContext context, ApplicationContext context1) 
         {
             db = context;
+            aC = context1;
         }
 
         // GET: TerminalController
+        [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.FioAsc)
         {
             int pageSize = 15;
@@ -57,6 +64,15 @@ namespace Library_KP.Controllers
                     break;
             }
 
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                var user = User.Identity.Name;
+                int userId = (from i in aC.Users where i.Email == user select i.Id).Single();
+                ter = db.Terminals.Where(vM => vM.NumberTickets == userId).Include(x => x.NumberTicketsNavigation).Include(b => b.RegistrationBook);
+                //return View(viewModel);
+            }
+
             // пагинация
             var count = await ter.CountAsync();
             var items = await ter.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
@@ -68,10 +84,12 @@ namespace Library_KP.Controllers
                 SortViewModel = new SortViewModel(sortOrder),
                 Terminals = items
             };
+
             return View(viewModel);
         }
 
         // GET: TerminalController/Details/5
+        [Authorize(Roles = "admin, user")]
         public ActionResult Details(int id)
         {
             Terminal terminal = db.Terminals.Where(t => t.TerminalId == id).Include(r => r.NumberTicketsNavigation).Include(b => b.RegistrationBook).FirstOrDefault();
@@ -87,6 +105,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: TerminalController/Create
+        [Authorize(Roles = "admin")]
         public ActionResult Create()
         {
             Terminal ter = new();
@@ -115,6 +134,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: TerminalController/Edit/5
+        [Authorize(Roles = "admin")]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -155,6 +175,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: TerminalController/Delete/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             try

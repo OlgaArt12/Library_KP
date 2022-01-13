@@ -1,6 +1,7 @@
 ﻿using Library_KP.Data;
 using Library_KP.Models;
-using Library_KP.Models.BooksModel; 
+using Library_KP.Models.BooksModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -22,6 +23,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: BookController
+        [Authorize(Roles = "admin, user")]
         public async Task<IActionResult> Index(int? part, string nameBook, int page = 1, SortState sortOrder = SortState.NameBookAsc)
         {
              int pageSize = 15;
@@ -89,6 +91,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: BookController/Details/5
+        [Authorize(Roles = "admin, user")]
         public ActionResult Details(int id)
         {
             Book book = db.Books.Where(b => b.RegistrationId == id).Include(p => p.PartitionNameNavigation).FirstOrDefault();
@@ -98,6 +101,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: BookController/Create
+        [Authorize(Roles = "admin")]
         public ActionResult Create()
         {
             Book book = new();
@@ -125,6 +129,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: BookController/Edit/5
+        [Authorize(Roles = "admin")]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -165,6 +170,7 @@ namespace Library_KP.Controllers
 
 
         // GET: BookController/Delete/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             try

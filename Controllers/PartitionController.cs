@@ -1,11 +1,13 @@
 ﻿using Library_KP.Data;
 using Library_KP.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Library_KP.Controllers
@@ -20,6 +22,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: PartitionController
+        [Authorize(Roles = "admin, user")]
         public ActionResult Index()
         {
             List<Partition> partitions = db.Partitions.ToList();
@@ -27,6 +30,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: PartitionController/Details/5
+        [Authorize(Roles = "admin, user")]
         public ActionResult Details(int id)
         {
             Partition partition = db.Partitions.Where(p => p.PartitionId == id).FirstOrDefault();
@@ -36,8 +40,15 @@ namespace Library_KP.Controllers
         }
 
         // GET: PartitionController/Create
+        [Authorize(Roles = "admin")]
         public ActionResult Create()
         {
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if(role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                return View("Index");
+            }
             Partition partition = new Partition();
             return View(partition);
         }
@@ -61,6 +72,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: PartitionController/Edit/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id != null)
@@ -92,6 +104,7 @@ namespace Library_KP.Controllers
         }
 
         // GET: PartitionController/Delete/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             var countBook = (from t in db.Books where t.PartitionNameNavigation.PartitionId == id select t).Count();

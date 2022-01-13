@@ -1,11 +1,13 @@
 ﻿using Library_KP.Data;
 using Library_KP.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Library_KP.Controllers
@@ -19,9 +21,11 @@ namespace Library_KP.Controllers
             _logger = logger;
         }
 
+        [Authorize(Roles = "admin, user")]
         public IActionResult Index()
         {
-            return View();
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            return View("Index");
         }
 
         public IActionResult Privacy()

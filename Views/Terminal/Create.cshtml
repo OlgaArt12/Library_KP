@@ -1,0 +1,46 @@
+﻿@model Library_KP.Models.Terminal
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Добавить запись</h1>
+
+<h4>Выдача/Возврат книг</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="RegistrationBookId" class="control-label"></label>
+                <select asp-for="RegistrationBookId" class ="form-control" asp-items="ViewBag.RegistrationBookId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="NumberTickets" class="control-label"></label>
+                <select asp-for="NumberTickets" class ="form-control" asp-items="ViewBag.NumberTickets"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateIssue" class="control-label"></label>
+                <input asp-for="DateIssue" class="form-control" />
+                <span asp-validation-for="DateIssue" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReturnDate" class="control-label"></label>
+                <input asp-for="ReturnDate" class="form-control" />
+                <span asp-validation-for="ReturnDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Выдать" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Вернуться назад!</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

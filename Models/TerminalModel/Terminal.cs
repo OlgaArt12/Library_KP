@@ -25,6 +25,8 @@ namespace Library_KP.Models
         [DisplayName("Название книги: ")]
         [Column("Registration_Book_ID")]
         public int RegistrationBookId { get; set; }
+
+        [DisplayName("ФИО читателя:")]
         public int NumberTickets { get; set; }
 
         [Required(ErrorMessage = "Поле является обязательным")]

@@ -76,7 +76,7 @@ namespace Library_KP.Controllers
         {
             Terminal terminal = db.Terminals.Where(t => t.TerminalId == id).Include(r => r.NumberTicketsNavigation).Include(b => b.RegistrationBook).FirstOrDefault();
             var dI = (from dT in db.Terminals where dT.TerminalId == id select dT.DateIssue).Single();
-            var rI = (from rT in db.Terminals where rT.TerminalId == id && rT.ReturnDate != null select rT.ReturnDate).Single();
+            var rI = (from rT in db.Terminals where rT.TerminalId == id  select rT.ReturnDate).Single();
             DateTime rI1 = Convert.ToDateTime(rI); 
             if((rI1 - dI).TotalDays > 30)
             {
@@ -89,21 +89,28 @@ namespace Library_KP.Controllers
         // GET: TerminalController/Create
         public ActionResult Create()
         {
-            return View();
+            Terminal ter = new();
+            ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+            return View(ter);
         }
 
         // POST: TerminalController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Create(Terminal ter)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                db.Add(ter);
+                await db.SaveChangesAsync();
+                ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                return RedirectToAction("Index");
             }
             catch
             {
-                return View();
+                return RedirectToAction("Index");
             }
         }
 

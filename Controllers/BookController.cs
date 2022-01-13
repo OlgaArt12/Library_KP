@@ -100,7 +100,6 @@ namespace Library_KP.Controllers
         // GET: BookController/Create
         public ActionResult Create()
         {
-            
             Book book = new();
             ViewBag.PartitionName = new SelectList(db.Partitions, "PartitionId", "NamePartition", book.PartitionName);
             return View(book);

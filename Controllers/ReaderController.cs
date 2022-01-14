@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Library_KP.Controllers
@@ -15,10 +16,12 @@ namespace Library_KP.Controllers
     public class ReaderController : Controller
     {
         private readonly LibraryContext db;
+        private readonly ApplicationContext aC;
 
-        public ReaderController(LibraryContext context) 
+        public ReaderController(LibraryContext context, ApplicationContext context1) 
         {
             db = context;
+            aC = context1;
         }
 
         // GET: ReaderController
@@ -52,6 +55,14 @@ namespace Library_KP.Controllers
                     break;
             }
 
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                var user = User.Identity.Name;
+                int userId = (from i in aC.Users where i.Email == user select i.Id).Single();
+                readers = db.Readers.Where(vM => vM.NumberTicket == userId);
+            }
+
             // пагинация
             var count = await readers.CountAsync();
             var items = await readers.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
@@ -80,6 +91,12 @@ namespace Library_KP.Controllers
         [Authorize(Roles = "admin")]
         public ActionResult Create()
         {
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                return View("Index");
+            }
             Reader reader = new Reader();
             return View(reader);
         }
@@ -114,6 +131,12 @@ namespace Library_KP.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int? id)
         {
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                return View("Index");
+            }
             if (id != null)
             {
                 Reader reader = await db.Readers.FirstOrDefaultAsync(r => r.NumberTicket == id);
@@ -156,6 +179,12 @@ namespace Library_KP.Controllers
         {
             try
             {
+                string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+                if (role == "user")
+                {
+                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                    return View("Index");
+                }
                 var reader = await db.Readers.FindAsync(id);
                 db.Readers.Remove(reader);
                 db.SaveChanges();

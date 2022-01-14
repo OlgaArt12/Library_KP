@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Library_KP.Controllers
@@ -104,6 +105,12 @@ namespace Library_KP.Controllers
         [Authorize(Roles = "admin")]
         public ActionResult Create()
         {
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                return View("Index");
+            }
             Book book = new();
             ViewBag.PartitionName = new SelectList(db.Partitions, "PartitionId", "NamePartition", book.PartitionName);
             return View(book);
@@ -135,6 +142,12 @@ namespace Library_KP.Controllers
             if (id == null)
             {
                 return View();
+            }
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                return View("Index");
             }
             Book book = db.Books.Find(id);
             if (book == null)
@@ -175,6 +188,12 @@ namespace Library_KP.Controllers
         {
             try
             {
+                string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+                if (role == "user")
+                {
+                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                    return View("Index");
+                }
                 var books = await db.Books.FindAsync(id);
                 db.Books.Remove(books);
                 db.SaveChanges();

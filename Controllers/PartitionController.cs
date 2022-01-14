@@ -75,6 +75,12 @@ namespace Library_KP.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(int? id)
         {
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                return View("Index");
+            }
             if (id != null)
             {
                     Partition partition = await db.Partitions.FirstOrDefaultAsync(p => p.PartitionId == id);
@@ -107,6 +113,12 @@ namespace Library_KP.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int? id)
         {
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                return View("Index");
+            }
             var countBook = (from t in db.Books where t.PartitionNameNavigation.PartitionId == id select t).Count();
             if (countBook >= 100)
             {
@@ -114,7 +126,6 @@ namespace Library_KP.Controllers
                 Partition partition = db.Partitions.Where(p => p.PartitionId == id).FirstOrDefault();
                 return View(partition);
             }
-
             var part = await db.Partitions.FindAsync(id);
             db.Partitions.Remove(part);
             db.SaveChanges();

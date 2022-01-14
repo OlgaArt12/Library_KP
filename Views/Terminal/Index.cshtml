@@ -1,5 +1,5 @@
 ﻿@using Library_KP.Models.TerminalModel
-@model IndexViewModel
+@model IndexViewModel1
 @addTagHelper *, Library_KP
 
 
@@ -8,6 +8,7 @@
 }
 
 <h1>Выдача/Возврат книг</h1>
+<h5>@ViewBag.Message</h5>
 
 <p>
     <a asp-action="Create" class="btn btn-sm btn-success ml-1">Выдать книгу</a>

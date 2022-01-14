@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Library_KP.Models.TerminalModel
 {
-    public class IndexViewModel
+    public class IndexViewModel1
     {
         public IEnumerable<Terminal> Terminals { get; set; }
         public PageViewModel PageViewModel { get; set; }
-        public SortViewModel SortViewModel { get; set; }
+        public SortViewModel1 SortViewModel { get; set; }
     }
 }

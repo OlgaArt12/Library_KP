@@ -13,6 +13,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Library_KP.Models.BooksModel;
 
 namespace Library_KP.Controllers
 {
@@ -29,7 +30,7 @@ namespace Library_KP.Controllers
 
         // GET: TerminalController
         [Authorize(Roles = "admin, user")]
-        public async Task<IActionResult> Index(int page = 1, SortState sortOrder = SortState.FioAsc)
+        public async Task<IActionResult> Index(int page = 1, SortState1 sortOrder = SortState1.FioAsc)
         {
             int pageSize = 15;
 
@@ -38,25 +39,25 @@ namespace Library_KP.Controllers
             // сортировка
             switch (sortOrder)
             {
-                case SortState.FioDesc:
+                case SortState1.FioDesc:
                     ter = ter.OrderByDescending(s => s.NumberTicketsNavigation.Fcs);
                     break;
-                case SortState.NameBookAsc:
+                case SortState1.NameBookAsc:
                     ter = ter.OrderBy(s => s.RegistrationBook.NameBook);
                     break;
-                case SortState.NameBookDesc:
+                case SortState1.NameBookDesc:
                     ter = ter.OrderByDescending(s => s.RegistrationBook.NameBook);
                     break;
-                case SortState.DIAsc:
+                case SortState1.DIAsc:
                     ter = ter.OrderBy(s => s.DateIssue);
                     break;
-                case SortState.DIDesc:
+                case SortState1.DIDesc:
                     ter = ter.OrderByDescending(s => s.DateIssue);
                     break;
-                case SortState.RDAsc:
+                case SortState1.RDAsc:
                     ter = ter.OrderBy(s => s.ReturnDate);
                     break;
-                case SortState.RDDesc:
+                case SortState1.RDDesc:
                     ter = ter.OrderByDescending(s => s.ReturnDate);
                     break;
                 default:
@@ -78,10 +79,10 @@ namespace Library_KP.Controllers
             var items = await ter.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             // формируем модель представления
-            IndexViewModel viewModel = new IndexViewModel
+            IndexViewModel1 viewModel = new IndexViewModel1
             {
                 PageViewModel = new PageViewModel(count, page, pageSize),
-                SortViewModel = new SortViewModel(sortOrder),
+                SortViewModel = new SortViewModel1(sortOrder),
                 Terminals = items
             };
 
@@ -92,14 +93,28 @@ namespace Library_KP.Controllers
         [Authorize(Roles = "admin, user")]
         public ActionResult Details(int id)
         {
-            Terminal terminal = db.Terminals.Where(t => t.TerminalId == id).Include(r => r.NumberTicketsNavigation).Include(b => b.RegistrationBook).FirstOrDefault();
-            var dI = (from dT in db.Terminals where dT.TerminalId == id select dT.DateIssue).Single();
-            var rI = (from rT in db.Terminals where rT.TerminalId == id  select rT.ReturnDate).Single();
-            DateTime rI1 = Convert.ToDateTime(rI); 
-            if((rI1 - dI).TotalDays > 30)
+            Terminal terminal = db.Terminals.Where(t => t.TerminalId == id).Include(r => r.NumberTicketsNavigation).Include(b => b.RegistrationBook).FirstOrDefault();            
+            var dC = (from d in db.Terminals where (d.ReturnDate == null) && d.TerminalId == id select d).Count();
+            if(dC != 0)
             {
-                ViewBag.div = "Этот человек должник!";
-                return View(terminal);
+                var dI = (from dT in db.Terminals where dT.TerminalId == id select dT.DateIssue).Single();
+                var dateIssRet = dI.AddMonths(1);
+                if((dateIssRet - dI).TotalDays > 30)
+                {
+                    ViewBag.div = "Этот человек должник!";
+                    return View(terminal);
+                }
+            }
+            else if(dC == 0)
+            {
+                var dI = (from dT in db.Terminals where dT.TerminalId == id select dT.DateIssue).Single();
+                var dR = (from dT in db.Terminals where dT.TerminalId == id && dT.ReturnDate != null select dT.ReturnDate).Single();
+                DateTime dateRet = Convert.ToDateTime(dR);
+                if((dateRet - dI).TotalDays > 30)
+                {
+                    ViewBag.div = "Этот человек должник!";
+                    return View(terminal);
+                }
             }
             return View(terminal);
         }
@@ -110,8 +125,8 @@ namespace Library_KP.Controllers
         {
             Terminal ter = new();
             ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
-            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
-            return View(ter);
+            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);           
+            return View("Create");
         }
 
         // POST: TerminalController/Create
@@ -121,11 +136,53 @@ namespace Library_KP.Controllers
         {
             try
             {
-                db.Add(ter);
-                await db.SaveChangesAsync();
-                ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
-                ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
-                return RedirectToAction("Index");
+
+                var unic = (from u in db.Terminals
+                            where u.NumberTickets == ter.NumberTickets && u.RegistrationBookId == ter.RegistrationBookId && u.ReturnDate == ter.ReturnDate && u.DateIssue == ter.DateIssue
+                            select u).Count();
+
+                Book b1 = (from b in db.Books
+                           where b.RegistrationId == ter.RegistrationBookId
+                           select b).Single();
+
+                if(ter.ReturnDate == null)
+                {
+                    ter.ReturnDate = DateTime.Today;
+                }
+
+                int dat = (from d in db.Terminals
+                           where ((d.DateIssue <= ter.DateIssue && ter.DateIssue <= d.ReturnDate) || (d.DateIssue <= ter.ReturnDate && ter.ReturnDate <= d.ReturnDate) 
+                            || (d.DateIssue <= ter.DateIssue && d.ReturnDate >= ter.ReturnDate) 
+                                || (d.DateIssue >= ter.DateIssue && d.ReturnDate <= ter.ReturnDate)) && d.RegistrationBookId == ter.RegistrationBookId
+                           select d).Count();
+
+                if (ter.DateIssue >= ter.ReturnDate || ter.DateIssue > DateTime.Today)
+                {
+                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                    return View("Create");
+                }
+                else if(dat > 0)
+                {
+                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                    return View("Create");
+                }
+                else if (b1.YearOfPublication > ter.DateIssue.Year)
+                {
+                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                    return View("Create");
+                }
+                else if (unic > 0)
+                {
+                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
+                    return View("Create");
+                }
+
+                    db.Add(ter);
+                    await db.SaveChangesAsync();
+                    ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                    ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                    return RedirectToAction("Index");
+                
             }
             catch
             {
@@ -148,7 +205,7 @@ namespace Library_KP.Controllers
             }
             ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
             ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
-            return View(ter);
+            return View("Create");
         }
 
         // POST: TerminalController/Edit/5
@@ -166,7 +223,7 @@ namespace Library_KP.Controllers
                 }
                 ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
                 ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
-                return View(ter);
+                return View("Create");
             }
             catch
             {

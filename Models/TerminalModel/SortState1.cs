@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Library_KP.Models.TerminalModel
 {
-    public enum SortState
+    public enum SortState1
     {
         NameBookAsc,    
         NameBookDesc,  

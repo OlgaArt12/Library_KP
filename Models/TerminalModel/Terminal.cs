@@ -31,13 +31,15 @@ namespace Library_KP.Models
 
         [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Дата выдачи: ")]
+        [DataType(DataType.Date, ErrorMessage = "Некорректный ввод")]
         [Column("Date_issue", TypeName = "date")]
         public DateTime DateIssue { get; set; }
 
-        [Required(ErrorMessage = "Поле является обязательным")]
         [DisplayName("Дата возврата: ")]
+        [DataType(DataType.Date, ErrorMessage = "Некорректный ввод")]
+
         [Column("Return_date", TypeName = "date")]
-        public DateTime ReturnDate { get; set; }
+        public DateTime? ReturnDate { get; set; }
 
         [ForeignKey(nameof(NumberTickets))]
         [InverseProperty(nameof(Reader.Terminals))]

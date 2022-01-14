@@ -82,7 +82,7 @@ namespace Library_KP.Controllers
         public ActionResult Details(int id)
         {
             Reader reader = db.Readers.Where(r => r.NumberTicket == id).FirstOrDefault();
-            var countBook = (from cB in db.Terminals where cB.NumberTicketsNavigation.NumberTicket == id select cB).Count();
+            var countBook = (from cB in db.Terminals where (DateTime.Today.AddMonths(-1) >= cB.DateIssue && cB.ReturnDate == null) || (cB.ReturnDate >= cB.DateIssue.AddMonths(1)) && cB.NumberTickets == id select cB).Count();
             ViewBag.countBook = countBook;
             return View(reader);
         }
@@ -94,8 +94,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if (role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                return View("Index");
+                ViewBag.Message = "У вас недостаочно прав для этого действия!";
+                return View();
             }
             Reader reader = new Reader();
             return View(reader);
@@ -134,8 +134,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if (role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                return View("Index");
+                ViewBag.Message = "У вас недостаочно прав для этого действия!";
+                return View();
             }
             if (id != null)
             {
@@ -164,12 +164,12 @@ namespace Library_KP.Controllers
                     return RedirectToAction("Index");
                 }
                 ViewBag.Message = "Введенные данные не уникальны! ";
-                return View();
+                return View("Edit");
             }
             catch
             {
-                ViewBag.Message = "Введенные данные не уникальны! ";
-                return View();
+                ViewBag.Message = "Произошла ошибка! ";
+                return View("Edit");
             }
         }
 
@@ -182,8 +182,8 @@ namespace Library_KP.Controllers
                 string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
                 if (role == "user")
                 {
-                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                    return View("Index");
+                    ViewBag.Message = "У вас недостаочно прав для этого действия!";
+                    return View();
                 }
                 var reader = await db.Readers.FindAsync(id);
                 db.Readers.Remove(reader);

@@ -137,52 +137,99 @@ namespace Library_KP.Controllers
             try
             {
 
-                var unic = (from u in db.Terminals
-                            where u.NumberTickets == ter.NumberTickets && u.RegistrationBookId == ter.RegistrationBookId && u.ReturnDate == ter.ReturnDate && u.DateIssue == ter.DateIssue
-                            select u).Count();
+                var regBookRet = (from rBr in db.Terminals
+                                  where  rBr.RegistrationBookId == ter.RegistrationBookId && rBr.ReturnDate == null
+                                  select rBr).Count();
 
-                Book b1 = (from b in db.Books
-                           where b.RegistrationId == ter.RegistrationBookId
-                           select b).Single();
-
-                if(ter.ReturnDate == null)
+                if(regBookRet != 0)
                 {
-                    ter.ReturnDate = DateTime.Today;
-                }
-
-                int dat = (from d in db.Terminals
-                           where ((d.DateIssue <= ter.DateIssue && ter.DateIssue <= d.ReturnDate) || (d.DateIssue <= ter.ReturnDate && ter.ReturnDate <= d.ReturnDate) 
-                            || (d.DateIssue <= ter.DateIssue && d.ReturnDate >= ter.ReturnDate) 
-                                || (d.DateIssue >= ter.DateIssue && d.ReturnDate <= ter.ReturnDate)) && d.RegistrationBookId == ter.RegistrationBookId
-                           select d).Count();
-
-                if (ter.DateIssue >= ter.ReturnDate || ter.DateIssue > DateTime.Today)
-                {
-                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                    return View("Create");
-                }
-                else if(dat > 0)
-                {
-                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                    return View("Create");
-                }
-                else if (b1.YearOfPublication > ter.DateIssue.Year)
-                {
-                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                    return View("Create");
-                }
-                else if (unic > 0)
-                {
-                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                    return View("Create");
-                }
-
-                    db.Add(ter);
-                    await db.SaveChangesAsync();
+                    ViewBag.Message = "К сожалению вы не можете выдать книгу, которая уже выдана!";
                     ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
                     ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
-                    return RedirectToAction("Index");
-                
+                    return View("Create");
+                }
+                else 
+                {
+                    var unic = (from u in db.Terminals
+                                where u.NumberTickets == ter.NumberTickets && u.RegistrationBookId == ter.RegistrationBookId && u.ReturnDate == ter.ReturnDate && u.DateIssue == ter.DateIssue
+                                select u).Count();
+
+                    if (unic != 0)
+                    {
+                        ViewBag.Message = "Такая запись уже существует!";
+                        ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                        ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                        return View("Create");
+                    }
+                    else
+                    {
+                        if (ter.DateIssue >= ter.ReturnDate || ter.DateIssue > DateTime.Today)
+                        {
+                            ViewBag.Message = "Вы ввели не корректные данный: дата выдачи не может быть больше сегодняшней даты или больше даты возврата!";
+                            ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                            return View("Create");
+                        }
+                        else
+                        {
+                            if(ter.DateIssue <= DateTime.Today && ter.ReturnDate > DateTime.Today)
+                            {
+                                ViewBag.Message = "Вы ввели не корректные данный: дата возврата не может быть больше сегодняшней даты, если книгу выдали сегодня!";
+                                ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                return View("Create");
+                            }
+                            else
+                            {
+                                var dat = (from dN in db.Terminals where ((dN.DateIssue <= ter.DateIssue && ter.DateIssue <= dN.ReturnDate) || (ter.DateIssue <= dN.DateIssue && (ter.ReturnDate == null || ter.ReturnDate >= dN.DateIssue))) && ter.RegistrationBookId == dN.RegistrationBookId select dN).Count();
+                                if(dat != 0)
+                                {
+                                    ViewBag.Message = "Книгу уже выдали!";
+                                    ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                    ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                    return View("Create");
+                                }
+                                else
+                                {
+                                    var countBook = (from cB in db.Terminals where (DateTime.Today.AddMonths(-1) >= cB.DateIssue && cB.ReturnDate == null) || (cB.ReturnDate >= cB.DateIssue.AddMonths(1)) 
+                                                        && cB.NumberTickets == ter.NumberTickets select cB).Count();
+                                    if(countBook >= 3)
+                                    {
+                                        ViewBag.Message = "Читатель не вернул больше 3х книг!";
+                                        ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                        ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                        return View("Create");
+                                    }
+                                    else
+                                    {
+                                        Book b1 = (from b in db.Books
+                                                   where b.RegistrationId == ter.RegistrationBookId
+                                                   select b).Single();
+
+                                        if (b1.YearOfPublication > ter.DateIssue.Year)
+                                        {
+                                            ViewBag.Message = "Книгу еще не издали!";
+                                            ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                            return View("Create");
+                                        }
+                                        else
+                                        {
+                                            db.Add(ter);
+                                            await db.SaveChangesAsync();
+                                            ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                            return RedirectToAction("Index");
+                                        }
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    }
+
+                }
+             
             }
             catch
             {
@@ -205,7 +252,7 @@ namespace Library_KP.Controllers
             }
             ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
             ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
-            return View("Create");
+            return View(ter);
         }
 
         // POST: TerminalController/Edit/5
@@ -223,7 +270,7 @@ namespace Library_KP.Controllers
                 }
                 ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
                 ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
-                return View("Create");
+                return View(ter);
             }
             catch
             {

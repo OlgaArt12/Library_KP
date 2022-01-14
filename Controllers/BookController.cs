@@ -108,8 +108,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if (role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                return View("Index");
+                ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                return View("Login");
             }
             Book book = new();
             ViewBag.PartitionName = new SelectList(db.Partitions, "PartitionId", "NamePartition", book.PartitionName);
@@ -126,7 +126,7 @@ namespace Library_KP.Controllers
                 db.Add(book);
                 await db.SaveChangesAsync();
                 ViewBag.PartitionName = new SelectList(db.Partitions, "PartitionId", "NamePartition", book.PartitionName);
-                return RedirectToAction("Index");
+                return RedirectToAction("Create");
             }
             catch
             {
@@ -146,8 +146,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if (role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                return View("Index");
+                ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                return View("Login");
             }
             Book book = db.Books.Find(id);
             if (book == null)
@@ -165,19 +165,15 @@ namespace Library_KP.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
-                {
-                    db.Entry(book).State = EntityState.Modified;
-                    db.SaveChanges();
-                    return RedirectToAction("Index");
-                }
+                
+                db.Entry(book).State = EntityState.Modified;
+                db.SaveChanges();
                 ViewBag.PartitionName = new SelectList(db.Partitions, "PartitionId", "NamePartition", book.PartitionName);
-
-                return View(book);
+                return RedirectToAction("Index");
             }
             catch
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Edit");
             }
         }
 
@@ -191,8 +187,8 @@ namespace Library_KP.Controllers
                 string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
                 if (role == "user")
                 {
-                    ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                    return View("Index");
+                    ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                    return View("Login");
                 }
                 var books = await db.Books.FindAsync(id);
                 db.Books.Remove(books);

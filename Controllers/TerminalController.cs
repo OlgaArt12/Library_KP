@@ -71,7 +71,6 @@ namespace Library_KP.Controllers
                 var user = User.Identity.Name;
                 int userId = (from i in aC.Users where i.Email == user select i.Id).Single();
                 ter = db.Terminals.Where(vM => vM.NumberTickets == userId).Include(x => x.NumberTicketsNavigation).Include(b => b.RegistrationBook);
-                //return View(viewModel);
             }
 
             // пагинация
@@ -103,6 +102,12 @@ namespace Library_KP.Controllers
         [Authorize(Roles = "admin")]
         public ActionResult Create()
         {
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                return View("Login");
+            }
             Terminal ter = new();
             ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
             ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);           
@@ -208,12 +213,11 @@ namespace Library_KP.Controllers
                         }
                     }
 
-                }
-             
+                }             
             }
             catch
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Create");
             }
         }
 
@@ -224,6 +228,12 @@ namespace Library_KP.Controllers
             if (id == null)
             {
                 return View();
+            }
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            if (role == "user")
+            {
+                ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                return View("Login");
             }
             Terminal ter = db.Terminals.Find(id);
             if (ter == null)
@@ -242,19 +252,114 @@ namespace Library_KP.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+
+                var regBookRet = (from rBr in db.Terminals
+                                  where rBr.RegistrationBookId == ter.RegistrationBookId && rBr.ReturnDate == null && rBr.TerminalId != ter.TerminalId
+                                  select rBr).Count();
+
+                if (regBookRet != 0)
                 {
-                    db.Entry(ter).State = EntityState.Modified;
-                    db.SaveChanges();
-                    return RedirectToAction("Index");
+                    ViewBag.Message = "К сожалению вы не можете выдать книгу, которая уже выдана!";
+                    ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                    ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                    return View("Edit");
                 }
-                ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
-                ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
-                return View(ter);
+                else
+                {
+                    var unic = (from u in db.Terminals
+                                where u.NumberTickets == ter.NumberTickets
+                                    && u.RegistrationBookId == ter.RegistrationBookId && u.ReturnDate == ter.ReturnDate
+                                    && u.DateIssue == ter.DateIssue
+                                    && u.TerminalId != ter.TerminalId
+                                select u).Count();
+
+                    if (unic != 0)
+                    {
+                        ViewBag.Message = "Такая запись уже существует!";
+                        ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                        ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                        return View("Edit");
+                    }
+                    else
+                    {
+                        if (ter.DateIssue >= ter.ReturnDate || ter.DateIssue > DateTime.Today)
+                        {
+                            ViewBag.Message = "Вы ввели не корректные данные: дата выдачи не может быть больше сегодняшней даты или больше даты возврата!";
+                            ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                            return View("Edit");
+                        }
+                        else
+                        {
+                            if (ter.DateIssue <= DateTime.Today && ter.ReturnDate > DateTime.Today)
+                            {
+                                ViewBag.Message = "Вы ввели не корректные данные: дата возврата не может быть больше сегодняшней даты, если книгу выдали сегодня!";
+                                ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                return View("Edit");
+                            }
+                            else
+                            {
+                                var dat = (from dN in db.Terminals
+                                           where ((dN.DateIssue <= ter.DateIssue && ter.DateIssue <= dN.ReturnDate) ||
+                   (ter.DateIssue <= dN.DateIssue && (ter.ReturnDate == null || ter.ReturnDate >= dN.DateIssue)))
+                   && ter.RegistrationBookId == dN.RegistrationBookId
+                   && ter.TerminalId != dN.TerminalId
+                                           select dN).Count();
+                                if (dat != 0)
+                                {
+                                    ViewBag.Message = "Книгу уже выдали!";
+                                    ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                    ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                    return View("Edit");
+                                }
+                                else
+                                {
+                                    var countBook = (from cB in db.Terminals
+                                                     where ((DateTime.Today.AddMonths(-1) >= cB.DateIssue && cB.ReturnDate == null) || (cB.ReturnDate >= cB.DateIssue.AddMonths(1)))
+                                                     && cB.NumberTickets == ter.NumberTickets
+                                                     select cB).Count();
+                                    if (countBook >= 3)
+                                    {
+                                        ViewBag.Message = "Читатель не вернул больше 3х книг!";
+                                        ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                        ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                        return View("Edit");
+                                    }
+                                    else
+                                    {
+                                        Book b1 = (from b in db.Books
+                                                   where b.RegistrationId == ter.RegistrationBookId
+                                                   select b).Single();
+
+                                        if (b1.YearOfPublication > ter.DateIssue.Year)
+                                        {
+                                            ViewBag.Message = "Книгу еще не издали!";
+                                            ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                            return View("Edit");
+                                        }
+                                        else
+                                        {
+                                            db.Entry(ter).State = EntityState.Modified;
+                                            db.SaveChanges();
+                                            ViewBag.RegistrationBookId = new SelectList(db.Books, "RegistrationId", "NameBook", ter.RegistrationBook);
+                                            ViewBag.NumberTickets = new SelectList(db.Readers, "NumberTicket", "Fcs", ter.NumberTicketsNavigation);
+                                            return RedirectToAction("Index");
+
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                }
             }
             catch
             {
-                return View();
+                return RedirectToAction("Edit");
             }
         }
 
@@ -264,6 +369,12 @@ namespace Library_KP.Controllers
         {
             try
             {
+                string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+                if (role == "user")
+                {
+                    ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                    return View("Login");
+                }
                 var ter = await db.Terminals.FindAsync(id);
                 db.Terminals.Remove(ter);
                 db.SaveChanges();

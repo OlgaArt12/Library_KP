@@ -94,8 +94,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if (role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для этого действия!";
-                return View();
+                ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                return View("Login");
             }
             Reader reader = new Reader();
             return View(reader);
@@ -118,12 +118,12 @@ namespace Library_KP.Controllers
                     return RedirectToAction("Index");
                 }
                 ViewBag.Message = "Введенные данные не уникальны!";
-                return View();
+                return View("Create");
             }
             catch
             {
                 ViewBag.Message = "Введенные данные не уникальны!";
-                return View();
+                return View("Create");
             }
         }
 
@@ -134,8 +134,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if (role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для этого действия!";
-                return View();
+                ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                return View("Login");
             }
             if (id != null)
             {
@@ -182,8 +182,8 @@ namespace Library_KP.Controllers
                 string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
                 if (role == "user")
                 {
-                    ViewBag.Message = "У вас недостаочно прав для этого действия!";
-                    return View();
+                    ViewBag.Message = "У вас недостаочно прав для этого действия. Ваша роль: " + role;
+                    return View("Login");
                 }
                 var reader = await db.Readers.FindAsync(id);
                 db.Readers.Remove(reader);
@@ -192,6 +192,7 @@ namespace Library_KP.Controllers
             }
             catch
             {
+                ViewBag.Message = "Произошла ошибка! ";
                 return RedirectToAction("Index");
             }
         }

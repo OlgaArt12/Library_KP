@@ -44,8 +44,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if(role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                return View("Index");
+                ViewBag.Message = "У вас недостаочно прав для создания нового раздела. Ваша роль: " + role;
+                return View("Login");
             }
             Partition partition = new Partition();
             return View(partition);
@@ -65,7 +65,7 @@ namespace Library_KP.Controllers
             catch
             {
                 ViewBag.Message = "Данный раздел уже существует! ";
-                return View();
+                return View("Create");
             }
         }
 
@@ -76,8 +76,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if (role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                return View("Index");
+                ViewBag.Message = "У вас недостаочно прав для изменения раздела. Ваша роль: " + role;
+                return View("Login");
             }
             if (id != null)
             {
@@ -103,7 +103,7 @@ namespace Library_KP.Controllers
             catch
             {
                 ViewBag.Message = "Данный раздел уже существует! ";
-                return View();
+                return View("Edit");
             }
         }
 
@@ -114,8 +114,8 @@ namespace Library_KP.Controllers
             string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
             if (role == "user")
             {
-                ViewBag.Message = "У вас недостаочно прав для создания нового раздела!";
-                return View("Index");
+                ViewBag.Message = "У вас недостаочно прав для удаления раздела. Ваша роль: " + role;
+                return View("Login");
             }
             var countBook = (from t in db.Books where t.PartitionNameNavigation.PartitionId == id select t).Count();
             if (countBook >= 100)

@@ -82,7 +82,7 @@ namespace Library_KP.Controllers
         public ActionResult Details(int id)
         {
             Reader reader = db.Readers.Where(r => r.NumberTicket == id).FirstOrDefault();
-            var countBook = (from cB in db.Terminals where (DateTime.Today.AddMonths(-1) >= cB.DateIssue && cB.ReturnDate == null) || (cB.ReturnDate >= cB.DateIssue.AddMonths(1)) && cB.NumberTickets == id select cB).Count();
+            var countBook = (from cB in db.Terminals where ((DateTime.Today.AddMonths(-1) >= cB.DateIssue && cB.ReturnDate == null) || (cB.ReturnDate >= cB.DateIssue.AddMonths(1))) && cB.NumberTickets == id select cB).Count();
             ViewBag.countBook = countBook;
             return View(reader);
         }

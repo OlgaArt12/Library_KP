@@ -1,0 +1,60 @@
+﻿@model IEnumerable<Library_KP.Models.ZaprosNew>
+
+    @{
+        ViewData["Title"] = "Index";
+    }
+
+    <h1>Должники:</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.NumberTickets)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Fcs)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NameBook)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateIssue)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReturnDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CountBookNeedReturn)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+       @foreach (var item in Model)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.NumberTickets)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Fcs)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NameBook)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateIssue)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReturnDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CountBookNeedReturn)
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+

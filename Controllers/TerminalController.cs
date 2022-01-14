@@ -93,29 +93,9 @@ namespace Library_KP.Controllers
         [Authorize(Roles = "admin, user")]
         public ActionResult Details(int id)
         {
-            Terminal terminal = db.Terminals.Where(t => t.TerminalId == id).Include(r => r.NumberTicketsNavigation).Include(b => b.RegistrationBook).FirstOrDefault();            
-            var dC = (from d in db.Terminals where (d.ReturnDate == null) && d.TerminalId == id select d).Count();
-            if(dC != 0)
-            {
-                var dI = (from dT in db.Terminals where dT.TerminalId == id select dT.DateIssue).Single();
-                var dateIssRet = dI.AddMonths(1);
-                if((dateIssRet - dI).TotalDays > 30)
-                {
-                    ViewBag.div = "Этот человек должник!";
-                    return View(terminal);
-                }
-            }
-            else if(dC == 0)
-            {
-                var dI = (from dT in db.Terminals where dT.TerminalId == id select dT.DateIssue).Single();
-                var dR = (from dT in db.Terminals where dT.TerminalId == id && dT.ReturnDate != null select dT.ReturnDate).Single();
-                DateTime dateRet = Convert.ToDateTime(dR);
-                if((dateRet - dI).TotalDays > 30)
-                {
-                    ViewBag.div = "Этот человек должник!";
-                    return View(terminal);
-                }
-            }
+            Terminal terminal = db.Terminals.Where(t => t.TerminalId == id).Include(r => r.NumberTicketsNavigation).Include(b => b.RegistrationBook).FirstOrDefault();
+            var countBook = (from cB in db.Terminals where ((DateTime.Today.AddMonths(-1) >= cB.DateIssue && cB.ReturnDate == null) || (cB.ReturnDate >= cB.DateIssue.AddMonths(1))) && cB.NumberTickets == id select cB).Count();
+            ViewBag.countBook = countBook;
             return View(terminal);
         }
 
@@ -191,7 +171,7 @@ namespace Library_KP.Controllers
                                 }
                                 else
                                 {
-                                    var countBook = (from cB in db.Terminals where (DateTime.Today.AddMonths(-1) >= cB.DateIssue && cB.ReturnDate == null) || (cB.ReturnDate >= cB.DateIssue.AddMonths(1)) 
+                                    var countBook = (from cB in db.Terminals where ((DateTime.Today.AddMonths(-1) >= cB.DateIssue && cB.ReturnDate == null) || (cB.ReturnDate >= cB.DateIssue.AddMonths(1)))
                                                         && cB.NumberTickets == ter.NumberTickets select cB).Count();
                                     if(countBook >= 3)
                                     {
